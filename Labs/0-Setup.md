@@ -118,7 +118,7 @@ $ cd ..
 
 Use `pwd` and verify that you're back in the original workspace directory. Now use `cd` to return to `cms450`.
 
-Make one more new directory called `python_examples` and `cd` into it.
+Make one more new directory called `js_examples` and `cd` into it.
 
 ### Quirk
 
