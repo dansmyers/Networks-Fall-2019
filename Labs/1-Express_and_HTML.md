@@ -270,7 +270,7 @@ Here's one last style block that makes things a little more readable by bringing
 `max-width` controls the size of the display region in the browser. `margin` sets a padding of 40px around all sides of the page
 content; `auto` centers the display region inside the browser frame, pulling everything to the middle. Note that this is centering the display region, not the content itself. The background and text are softened a little away from strict white and black.
 
-## The Sloth. The Answer is the Sloth
+## The Sloth. The Answer is the Sloth.
 
 If you have time remaining, jam out by creating a web page for your favorite animal.
 
