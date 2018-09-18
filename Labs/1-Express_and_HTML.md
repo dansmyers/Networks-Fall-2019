@@ -219,8 +219,8 @@ Create a `<style>` setion within the `<head>` block of your page:
 </head>
 ```
 
-The style rule specifies that the contents of all `<img>` tags should have their width set to 50% of the page size. Now, you can 
-remove the `style` declaration from the `<img>` tag declaration and the picture will still be scaled.
+The style rule specifies that the contents of all `<img>` tags should have their width set to 50% of the page size. You can 
+remove the `style` declaration from the `<img>` tag and the picture will still be scaled to 50% of the page width.
 
 You can add elements to the style block to control the presentation of other parts of the page. For example, to style the contents of  the entire body:
 
