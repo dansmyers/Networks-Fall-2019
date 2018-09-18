@@ -288,5 +288,4 @@ If you want to create lists of why your favorite animal is awesome, you can use 
     <li> Algae gives their fur a spectacular green color!
     <li> Sloth babies are born while the mother is hanging in a tree!
 </ul>
-
 ```
