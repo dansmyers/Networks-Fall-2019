@@ -162,8 +162,6 @@ Re-run your app with `node app.js` and reload the web page. You should see the c
 
 ## Interior Decoration
 
-## Interior Decoration
-
 Use `curl` to grab an image.
 ```
 prompt$ curl -O https://upload.wikimedia.org/wikipedia/commons/0/0a/The_Great_Wave_off_Kanagawa.jpg
