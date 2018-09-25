@@ -57,8 +57,7 @@ Open `index.html` and you're ready to start coding. Here's a shell Bootstrap pag
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
         
     </head>
-    
-    
+   
     <body>
 
         <!-- Recall: all Bootstrap content must be enclosed in a container div -->
@@ -215,6 +214,8 @@ Finally, add a `script` tag to the bottom of the body, above the current `script
             img.onload = function() {
                 // Set canvas size to image size
                 // Scales canvas up if image is larger than default in either dimension
+                canvas.width = 640;
+                canvas.height = 480;
                 canvas.width = Math.max(canvas.width, img.width);
                 canvas.height = Math.max(canvas.height, img.height);
                 
@@ -236,3 +237,97 @@ is what we'll use to actually put things on the canvas.
 finishes loading. The first lines increase the `canvas` size if necessary; the image will still be contrained to 100% of its column,
 but it won't be cut off or stretched. The last line finally draws the image on the `canvas`.
 
+## Add Controls
+
+Let's add some meme controls. Update the right column to the following:
+
+```
+                <div class="col-md-6">
+                    
+                    <label for="imageURL">Image URL</label>
+                    <input type="text" class="form-control" id="imageURL" placeholder="Enter the URL of the image you want to meme.">
+                             
+                    <label for="memeText" class="mt-4">Meme Text</label>
+                    <input type="text" class="form-control" id="memeText" placeholder="Put your meme text here.">
+                                        
+                    <button class="btn btn-primary btn-block mt-4" type="button" id="generateButton">
+                        Generate Meme
+                    </button>
+    
+                </div> <!-- /col-md-6 -->
+```
+
+The `input` tag creates an input field and the `type` property specifies that it is a `text` input, so it appears as a text box
+when the page renders.
+
+All Bootstrap inputs should have the `form-control` class. Notice, also, that each input has an `id` and a `placeholder` property
+that sets the initial text in the field.
+
+The `label` tags set the text that appear above each input.
+
+Use the `button` tag to create buttons. All Bootstrap buttons have the `btn` class. The additional classes are
+
+- `btn-primary` to make the button use the default Bootstrap blue color. There are other options: try `btn-danger` for a red button.
+
+- `btn-block` makes the button span the entire width of its column. Without that class, the button would be sized to fit its text.
+
+- `mt-4` adds some vertical space between elements.
+
+# Phase 1: Get the Image URL from the Input Box
+
+First, modify the `<script>` to load the image when the user clicks the button:
+
+```
+        <script>
+            // Get a reference to the canvas's drawing context
+            // context provides all drawing functions
+            var canvas = document.getElementById("canvas");
+            var context = canvas.getContext("2d");
+            
+            // Get a DOM reference to the button
+            var button = document.getElementById("generateButton");
+            
+            // Set a function that runs when the button is clicked
+            button.onclick = function() {
+            
+                // Create a new Image and assign it a source URL
+                var img = new Image();
+                img.src = "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Ducreux1.jpg/1280px-Ducreux1.jpg";
+            
+                // You can't draw the image until it's loaded
+                // This function runs when the image is ready
+                img.onload = function() {
+                    // Set canvas size to image size
+                    // Scales canvas up if image is larger than default in either dimension
+                    canvas.width = 640;
+                    canvas.height = 480;
+                    canvas.width = Math.max(canvas.width, img.width);
+                    canvas.height = Math.max(canvas.height, img.height);
+                
+                    // Draw the image
+                    // (0, 0) is the upper-left corner of the canvas
+                    context.drawImage(img, 0, 0, img.width, img.height);
+                }
+            }
+        </script>
+```
+
+This is a basic technique: get a reference to a page element using `document.getElementById()`, then set its `onclick` property
+to a function that runs when the user clicks on the element. In this case, the click function is the same code that loaded the
+pre-set image.
+
+Refresh the page and click the button. You should see the image load in the left pane.
+
+Now, modify the `<script>` to read the URL from the `imageURL` box and set it as the `src` of the new image. Tips:
+
+- Use `document.getElementById("imageURL")` to get a DOM reference to the text box.
+
+- Access the `value` property to get the box's string.
+
+Now, refresh the page, paste the URL into the input box, and press the button!
+
+```
+https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Ducreux1.jpg/1280px-Ducreux1.jpg
+
+https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/The_lake_of_Hakone_in_the_Segami_province.jpg/2560px-The_lake_of_Hakone_in_the_Segami_province.jpg
+```
