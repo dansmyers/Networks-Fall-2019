@@ -473,6 +473,9 @@ that was clicked most recently.
 
 The `if` statement sets the text height to be either close to the top or the bottom based on the position value.
 
+## Save Teh Memez
+
+If you want to save a meme, right-click (or CTRL + click on Mac) and choose "Save Image As..." to download as a PNG file.
 
 ## Complete Code
 
@@ -624,3 +627,19 @@ Here's the complete page with all elements and script features:
     
 </html>
 ```
+
+## Lessons
+
+Again, the purpose of this lab is **not** to memorize every feature and class we used to build the application. Keep the following things in mind:
+
+- Modern web dev is mostly about gluing together components of frameworks and browser API calls to get the effects you want. **Everything in this project came from reading Bootstrap documentation or doing searches to find examples**.
+
+- Remember the key technique of naming elements and then using `document.getElementById` to interact with them.
+
+- There are a lot of `canvas` functions, but they're mostly boilerplate that comes, again, from reading documentation and doping searches for examples. Likewise with the Bootstrap classes: there is a class for almost every design feature you want, you just have to 
+do a little reading to figure out what it is. The radio button example comes straight out of the Bootstrap documentation.
+
+## Jam
+
+If you have time, think about other features that might be cool to add. You could add some more buttons to the radio group, or try
+automatically inserting line breaks into the text.
