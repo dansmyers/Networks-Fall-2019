@@ -1,4 +1,4 @@
-# Meme Generator
+# I CAN HAZ MEMEZ?
 
 ## Overview
 
@@ -331,3 +331,144 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Ducreux1.jpg/1280px-Du
 
 https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/The_lake_of_Hakone_in_the_Segami_province.jpg/2560px-The_lake_of_Hakone_in_the_Segami_province.jpg
 ```
+
+## Phase 2: A Meme is an Image with Text
+
+Adding text to the image is conceptually easy:
+
+- Read the meme text from the box.
+
+- Draw it onto the image using the appropriate `context` functions.
+
+Modify the `<script>` to add some static text:
+
+```
+        <script>
+            // Get a reference to the canvas's drawing context
+            // context provides all drawing functions
+            var canvas = document.getElementById("canvas");
+            var context = canvas.getContext("2d");
+            
+            var button = document.getElementById("generateButton");
+            button.onclick = function() {
+                
+                // Get the source URL from the input box
+                var inputBox = document.getElementById("imageURL");
+                var url = inputBox.value;
+            
+                // Create a new Image and assign it a source URL
+                var img = new Image();
+                img.src = url;
+            
+                // You can't draw the image until it's loaded
+                // This function runs when the image is ready
+                img.onload = function() {
+                    // Set canvas size to image size
+                    // Scales canvas up if image is larger than default in either dimension
+                    canvas.width = 640;
+                    canvas.height = 480;
+                    canvas.width = Math.max(canvas.width, img.width);
+                    canvas.height = Math.max(canvas.height, img.height);                  
+                
+                    // Draw the image
+                    // (0, 0) is the upper-left corner of the canvas
+                    context.drawImage(img, 0, 0, img.width, img.height);
+                    
+                    // Set up and draw text
+                    // Black outline first, then white filled
+                    var text = "OHAI";
+                    var textX = img.width / 2;  // Center text within image
+                    var textY = img.height * .80;  // Place text near the bottom
+
+                    var fontSize = .10 * img.width;  // Scale font based on image width                    
+                    context.font = fontSize + "px Impact";  // Font string
+                
+                    context.textAlign = "center";  // Center text on x position
+  
+                    context.strokeStyle = 'black';
+                    context.lineWidth = .10 * fontSize;  // Width of black outline
+                    context.miterLimit = 2;  // Controls outline artifacts
+                    context.strokeText(text, textX, textY);  // Write black outline
+
+                    context.fillStyle = "white";
+                    context.fillText(text, textX, textY);  // Write white text
+                }
+            }
+        </script>
+```
+
+The new text drawing code is below the call to `context.drawImage`. The basic strategy is as follows:
+
+- Draw the black outline first, then the white filled text. The important functions are `strokeText` and `fillText`. Each takes the 
+string to write, plus the x and y position where it should be drawn on the `canvas`.
+
+- The `canvas` API provides an option that makes centering text easy. Set `textAlign = "center"` and the text will appear centered around its input x position. In this example, the x value is set to the center of the image. The height is set to 80% of the image 
+height, so the text appears close the bottom.
+
+- The font size is scaled to 10% of the image width. This keeps the font about the same visual size regardless of the input image size. The black outline width is set to 10% of the font size, so it also scales proportionally.
+
+- The font string combines the size in pixels with the font name, which is Impact for true meme authenticity.
+
+Now modify the script to take the meme text from its input box. Again, use `document.getElementById` and the `value` parameter. 
+When you've finished, you should be able to load an image by pasting its URL in the first box, then add text using the second box.
+
+## Phase 3: Radio, Radio
+
+This final example will demonstrate how to use radio buttons to select among mutually exclusive options. Our buttons will allow you
+to place the text at either the top or the bottom of the image.
+
+Modify the control pane to add Bootstrap-style radio buttons:
+
+```
+                <div class="col-md-6">
+                    
+                    <label for="imageURL">Image URL</label>
+                    <input type="text" class="form-control" id="imageURL" placeholder="Enter the URL of the image you want to meme.">
+                             
+                    <label for="memeText" class="mt-4">Meme Text</label>
+                    <input type="text" class="form-control" id="memeText" placeholder="Put your meme text here.">
+                                          
+                    <!-- Radio button group -->
+                    <div class="btn-group btn-group-toggle mt-4" data-toggle="buttons">
+                        <label class="btn btn-outline-primary active">
+                            <input type="radio" name="positions" value="bottom" autocomplete="off" checked> Text at Bottom
+                        </label>
+                        <label class="btn btn-outline-primary">
+                            <input type="radio" name="positions" value="top" autocomplete="off"> Text at Top
+                        </label>
+                    </div>
+                                        
+                    <button class="btn btn-primary btn-block mt-4" type="button" id="generateButton">
+                        Generate Meme
+                    </button>
+           
+                </div> <!-- /col-md-6 -->
+```
+
+The radio buttons have the class `btn-group`, which creates a set of buttons side-by-side. The `btn-group-toggle` class enforces the
+behavior that only one can be active at any time. Clicking on one will select it and de-select the others in the group.
+
+Each input is wrapped in an outer label, which has the class `btn-primary-outline`. This draws a white, unfilled button with blue text.
+The first button as the class `active`, which makes it appear as the selected element. Both have the required `btn` class.
+
+Notice that the buttons all have `type="radio"` and `name="positions"`. All radio buttons in a group have the same name. The first
+one, which has the `active` class, also has the `checked` property set to indicate that it's selected.
+
+Reload the page and experiment with clicking the buttons. You'll see that the one you click becomes active and the other is deactivated.
+
+Finally, let's modify the script to check which button is active. Add this code in place of the line that sets `textY`.
+
+```
+                    // Select height using radio buttons
+                    var position = document.querySelector('input[name="positions"]:checked').value;
+                    if (position == "bottom") {
+                        textY = img.height * .80;
+                    } else {
+                        textY = img.height * .20;
+                    }
+```
+
+This shows an alternate way of getting a value from an element. `document.querySelector` will find an element matching specified properties and return it. In this case, the string specifies searching the `input` elements with the name `positions` (recall that all buttons in the radio group share this name), then returning the one that has the `checked` property, which will always be the one
+that was clicked most recently.
+
+The `if` statement sets the text height to be either close to the top or the bottom based on the position value.
