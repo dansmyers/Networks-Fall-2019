@@ -1,0 +1,267 @@
+<!doctype html>
+<html>
+
+    <head>
+
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+        <style>
+            .scrollable {
+                height: 300px;
+                overflow-y: scroll;
+            }
+        </style>
+    </head>
+
+
+    <body>
+
+        <div class="jumbotron jumbotron-fluid bg-light">
+           <div class="container">
+
+                <!-- The display classes make text big -->
+                <h1 class="display-4">
+                    CMS 450 Chat Application
+                </h1>
+
+               <p class="lead">
+                   HELLO FRIENDS
+               </p>
+            </div> <!-- container -->
+        </div>
+
+
+        <!-- Recall: all Bootstrap content must be enclosed in a container div -->
+        <div class="container">
+            <div class="row">
+
+                <!-- Left pane has two rows, one for messages and one for input -->
+                <div class="col-md-7">
+
+                    <!-- Section where messages appear -->
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h3 id="conversationName">Posts</h3>
+
+                            <div class="scrollable" id="posts">
+                                <!-- Posts will appear in this div -->
+                            </div>
+
+                            <hr>  <!-- Horizontal line spanning column -->
+
+                        </div>
+
+                    </div>
+
+                    <!-- Section with new message input box -->
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+
+                            <div class="input-group mb-3">
+                                <input type="text" class="form-control" id="postInput" placeholder="New post">
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-secondary" type="button" id="postButton">Post</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div> <!-- /col-md-7 -->
+
+                <!-- Right pane displays account controls -->
+                <div class="col-md-5">
+                    
+                    <h3> Account Controls </h3>
+
+                    <input type="text" class="form-control" id="signInEmail" placeholder="E-mail">
+
+                    <input type="password" class="form-control" id="signInPassword" placeholder="Password">
+
+                    <button class="btn btn-outline-secondary btn-block mt-4" id="signInButton">
+                        Sign In
+                    </button>   
+                        
+                    <button class="btn btn-outline-secondary btn-block mt-2" id="createAccountButton">
+                        Create New Account
+                    </button>
+                        
+                    <button class="btn btn-outline-secondary btn-block mt-2" id="signOutButton">
+                        Sign Out
+                    </button>
+                    
+                    <div id="signInInformation" class="mt-4">
+                        <!-- Sign in information will appear here -->
+                    </div>
+
+                </div> <!-- /col-md-5 -->
+
+            </div> <!-- /row -->
+
+        </div> <!-- /container -->
+        
+
+        <!-- Firebase setup script comes before other scripts -->
+        <script src="https://www.gstatic.com/firebasejs/5.5.1/firebase.js"></script>
+        <script>
+            // Initialize Firebase
+            var config = {
+                apiKey: "AIzaSyDPAvEJ4xmZPY1H0qOkpa5FTly-TJ-ji6o",
+                authDomain: "fir-test-1d785.firebaseapp.com",
+                databaseURL: "https://fir-test-1d785.firebaseio.com",
+                projectId: "fir-test-1d785",
+                storageBucket: "fir-test-1d785.appspot.com",
+                messagingSenderId: "585297063806"
+            };
+
+            firebase.initializeApp(config);
+        </script>
+        
+
+        <script>
+
+            /*** Post button handler ***/
+            //
+            // Pushes new posts to the database
+            // Doesn't modify the content of the page
+            // Page updates are handled by the database's value listener below
+            document.getElementById("postButton").onclick = function() {
+                
+                // If the user isn't logged in, don't do anything
+                var user = firebase.auth().currentUser;
+                console.log(user);
+                if (!user) {
+                    return;
+                }
+                
+                var newPost = document.getElementById('postInput').value;
+                      
+                // Get a unique key from Firebase
+                var newPostKey = firebase.database().ref().child('posts').push().key;
+                
+                // Add the new post to the database
+                firebase.database().ref('posts/' + newPostKey).set({
+                    text: newPost,
+                    key: newPostKey,
+                    user: user.email,
+                });
+            }
+            
+            
+            /*** Populate the posts div ***/
+            function populatePosts() {                
+
+                // Populate the posts div
+                var posts = firebase.database().ref('posts/').once('value').then(function(snapshot) { 
+                    
+                    // Remove anything in the posts div                
+                    document.getElementById("posts").innerHTML = '';
+        
+                    // snapshot.val() gets the root of the tree of objects
+                    var posts = snapshot.val();
+
+                    // posts is a JS object
+                    // Iterate over its keys to access each post
+                    // Make a new <p> DOM node and append it to the posts <div>
+                    for (key in posts) {
+                        var newElement = document.createElement("p");
+                        newElement.innerHTML = '<b>' + posts[key].user + '</b>';
+                        newElement.innerHTML += '<br/>';
+                        newElement.innerHTML += posts[key].text;
+                        document.getElementById("posts").appendChild(newElement);
+                    } 
+                });
+            }
+
+            
+            /*** Listener for new posts, triggers on database state change ***/
+            firebase.database().ref('posts/').on('value', function(snapshot) {
+      
+                // If the user isn't logged in, don't do anything
+                var user = firebase.auth().currentUser;
+                if (!user) {
+                    return;
+                }              
+                    
+                // Fill the posts div with the current set of posts
+                populatePosts();
+            })
+            
+            
+            /*** Sign-In Button ***/
+            //
+            // Gets username and password from boxes
+            // Uses SESSION persistence, so sign in is only valid for the current tab
+            document.getElementById("signInButton").onclick = function() {
+                
+                firebase.auth().setPersistence(firebase.auth.Auth.Persistence.SESSION).then(function() {
+                    var email = document.getElementById("signInEmail").value;
+                    var password = document.getElementById("signInPassword").value;
+                    return firebase.auth().signInWithEmailAndPassword(email, password);
+                })
+               .catch(function(error) {
+                    document.getElementById('signInInformation').innerHTML = '<p>' + error.message + '</p>';
+               });
+            };
+            
+            
+            /*** Sign-In Button ***/
+            //
+            // Gets username and password from boxes
+            // Uses SESSION persistence, so sign in is only valid for the current tab
+            document.getElementById("createAccountButton").onclick = function() {
+                
+                firebase.auth().setPersistence(firebase.auth.Auth.Persistence.SESSION).then(function() {
+                    var email = document.getElementById("signInEmail").value;
+                    var password = document.getElementById("signInPassword").value;
+                    return firebase.auth().createUserWithEmailAndPassword(email, password).then(function(user) {
+                        populatePosts();
+                    });
+                })
+               .catch(function(error) {
+                    document.getElementById('signInInformation').innerHTML = '<p>' + error.message + '</p>';
+               });
+            };
+
+            
+            /*** Sign Out Button ***/
+            document.getElementById('signOutButton').onclick = function() {
+                firebase.auth().signOut();
+            }
+            
+            
+            /*** Sign In / Out Behavior ***/
+            //
+            // Triggers when user sign-in status changes
+            firebase.auth().onAuthStateChanged(function(user) {
+               
+                // User is signed in
+                if (user) {            
+                    populatePosts();     
+                    document.getElementById('signInInformation').innerHTML = '<p>Signed in as <b>' + user.email + '</b>.</p>';
+                }
+                
+                // User is signed out
+                else {             
+                    // Clear the posts div
+                    document.getElementById('posts').innerHTML = '';
+                    document.getElementById('signInEmail').value = '';
+                    document.getElementById('signInPassword').value = '';
+                    document.getElementById('signInInformation').innerHTML = '<p>Signed out.</p>';
+                }
+            });
+            
+        </script>
+
+        <!-- Optional JavaScript -->
+        <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+    </body>
+
+</html>
