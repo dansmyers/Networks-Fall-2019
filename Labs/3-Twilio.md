@@ -230,7 +230,7 @@ middle to this:
 The code is almost identical to the previous example, but will now generate a text-to-speech synthesized voice response. Make sure to
 keep the code at the end of the function that sends back the HTML response.
 
-Next, go back into your Twilio phone number settings and the field for "A CALL COMES IN" to use your application URL with the new `/voice` route.
+Next, go back into your Twilio phone number settings and update the field for "A CALL COMES IN" to use your application URL with the new `/voice` route.
 
 Stop your server with CTRL-C if it's still running from the previous example. Save your changes and re-run the server 
 (changes don't take effect unless your stop and re-run the server).
