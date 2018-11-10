@@ -100,7 +100,7 @@ Here's how this works:
 - It then automatically fires off an HTTP request to a server URL that you specify for handling incoming requests. We'll set this up
 in the next section.
 
-- The server's text handling URL is bound a bit of JavaScript code that runs when the server receives the HTTP request. The code can
+- The server's text-handling URL is bound to a bit of JavaScript code that runs when the server receives the HTTP request. The code can
 access the content of the message and send a text back to the user, using the same Twilio API calls as the last example.
 
 ### Create the Server App
