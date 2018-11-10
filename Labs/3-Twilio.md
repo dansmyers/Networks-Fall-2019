@@ -192,7 +192,7 @@ This line creates a route for the `/` URL (the root of the page). The associated
 Go to your project dashboard and navigate to the phone numbers page. Click on the one active number (the one you got from Twilio during
 the setup phase) and navigate down to "Messaging".
 
-In the field that says "A MESSAGE COME IN" put
+In the field that says "A MESSAGE COMES IN" put
 
 ```
 https://YOURWORKSPACENAME-YOURUSERNAME.c9users.io:8080/sms
