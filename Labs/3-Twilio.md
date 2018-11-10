@@ -214,6 +214,33 @@ node app.js
 
 Once your server is up, text your Twilio number. It will text you back.
 
+You can modify the code to collect some extra information about the incoming message. The `req` parameter of the function contains
+the body of the HTTP POST message. To access it, first install the `body-parser` package:
+
+```
+npm install body-parser --save
+```
+
+Next, add the following lines **after** you define `app = express()`.
+
+```
+var bodyParser = require('body-parser');
+app.use(bodyParser.json()); // support json encoded bodies
+app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
+```
+
+Recall that JSON is "JavaScript Object Notation". It's a way of representing JS objects (which are key-value maps), in text form.
+
+Add the following lines at the beginning of the `/sms` route function:
+
+```
+  console.log('From: ' + req.body.From);
+  console.log('Body: ' + req.body.Body);
+```
+
+`req.body` is the JS object holding the contents of the HTTP POST message. `From` is the number of the incoming message and `Body` is
+the message contents.
+
 ## The Voice
 
 Let's play another trick by creating a route that can receive and respond to voice calls.
@@ -237,6 +264,8 @@ Stop your server with CTRL-C if it's still running from the previous example. Sa
 
 Call your Twilio phone number. You'll hear a short message about having a trial account, then be prompted to press a button. Press
 any digit and then welcome your new machine overlord.
+
+## Mongoose
 
 
 
