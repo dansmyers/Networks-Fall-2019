@@ -265,12 +265,239 @@ Stop your server with CTRL-C if it's still running from the previous example. Sa
 Call your Twilio phone number. You'll hear a short message about having a trial account, then be prompted to press a button. Press
 any digit and then welcome your new machine overlord.
 
-## Mongoose
+## Mongo and Mongoose
+
+You've built a server that can receive and respond to text messages. However, you application has no **persistence**: there is no
+way to save data between requests. Therefore, the final part of this lab will add database support to the server.
+
+Our example database application will log all SMS texts sent to your Twilio phone number. We'll use two tools, MongoDB and Mongoose,
+to build it.
+
+MongoDB is an "open-source document database". It belongs to a class of what are sometimes called **NoSQL databases**.
+
+You may recall that many classic databases, like MySQL, Postgres, and Oracle, make use of the **relational data model**. In a relational
+DB, the data is conceptually modeled as a collection of 2-D tables, where each row in the table is a thing and the columns represent the
+attributes of a thing.
+
+```
+        columns are the attributes of a thing
+ -----------------------------------------------------
+|                                                     |
+v                                                     v
+=======================================================
+|   ID    |   LastName    |  FirstName   |  EMailAddr |  
+=======================================================
+|         |               |              |            |  <--- each row is one thing
+-------------------------------------------------------
+|         |               |              |            |
+-------------------------------------------------------
+```
+
+SQL, the "Structured Query Language", is a programming syntax for coding lookups and searches in a relational database.
+
+"NoSQL" databases got their name because, originally, they did not focus on supporting the same classic use cases as the relational model. Rather than using 2-D tables, NoSQL databases store data as looser collections of (key, value) pairs, kind of like a big
+hash table.
+
+Given that (key, value) pair objects are an integral part of JavaScript, the ability to quickly set up a database that could easily
+store and retrieve JS objects in JSON or a similar format without the complexity of a traditional DB quickly caught on in the web
+programming world.
+
+Since that time, the term **document database** has also caught on for similar applications.
+
+There are many NoSQL databases out there. We'll use MongoDB, which is one of the most popular. We'll pair it with another tool called
+Mongoose, which provides a nicer object-oriented front-end to the lower-level MongoDB database operations.
+
+This section will be pretty bare-bones, but it will equip you with enough working knowledge to think about building more sophistiated 
+data-driven applications, and to further explore the MongoDB and Mongoose documentation.
+
+### Install MongoDB
+
+The first step is to install MongoDB, then set up a script that runs it with some necessary parameters. To install, use our old buddy
+`sudo apt-get install`:
+
+```
+sudo apt-get install -y mongodb-org
+```
+
+Next, enter the following commands. The first makes a directory called `data` that will serve as the database location. The second 
+copies a command into the a script named `mongod`. The command includes some setting flags, notably `$IP`, the IP address of your
+current server instance. The `--nojournal` flag stops MongoDB from allocating a 2 GB journal file, which would blow up your disk quota. The last line uses `chmod` to adjust the permissions of the script.
+
+```
+mkdir data
+echo 'mongod --bind_ip=$IP --dbpath=data --nojournal --rest "$@"' > mongod
+chmod a+x mongod
+```
+
+Finally, run the `mongodb` process, which will start up and begin listening for connections on port 27017.
+
+```
+./mongod
+```
+
+You now have a running database.
+
+### The Mongoose Strikes
+
+Install the `mongoose` module using `npm`:
+
+```
+npm install mongoose --save
+```
+
+Now add some code to connect Mongoose to the running MongoDB instance. Place this **before** your `/sms` route to keep things organized:
+
+```
+// Mongoose connection to MongoDB
+var mongoose = require('mongoose');
+mongoose.connect('mongodb://localhost/test');
+
+var db = mongoose.connection;
+db.on('error', console.error.bind(console, 'connection error:'));
+db.once('open', function() {
+  console.log('Mongoose connected to DB.');
+});
+```
+
+Start your server like normal:
+
+```
+node app.js
+```
+
+You should see a message saying `Mongoose connected to DB`. You may get a warning about a URL strin parser; that's okay and you can ignore it.
+
+### Mongoose Workflow
+
+**JavaScript objects** are the **basic units of data storage** in a Mongo + Mongoose database. To store some data, you first package it 
+into an object, then invoke some appropriate functions to save the object in the DB.
+
+As you'll recall, JS objects are fundamentally (key, value) maps that associate names with values. Therefore, you can view a 
+Mongo + Mongoose data item as a "blob" of named data properties.
+
+However, you can't just chuck any object you want into the DB (at least, we're not going to let you do that--there are **rules**). You must first define a **schema** that specifies what names and their types you'd like a data object to contain.
+
+**Step 1: Create the Schema***  Modify your Mongoose setup code to the following. This code will create a data model for saving
+texts in the DB.
+
+```
+// Mongoose connection to MongoDB
+var mongoose = require('mongoose');
+mongoose.connect('mongodb://localhost/test');
+
+var Text;
+
+var db = mongoose.connection;
+db.on('error', console.error.bind(console, 'connection error:'));
+db.once('open', function() {
+  console.log('Mongoose connected to DB.');
+});
 
 
+// Define a model for data objects
+// from: the input number
+// body: the body of the test message
+var textSchema = new mongoose.Schema({
+  from: String,
+  body: String
+});
 
+// Compile the schema to create a model constructor
+var Text = mongoose.model('Text', textSchema);
+```
 
+The last line takes the `Schema` and compiles it to a special function that Mongoose calls a **model**. The model function is a
+constructor for DB objects.
 
+**Step 2: Update the `/sms` route to store data objects**  Modify the code for `/sms` to construct and save a data object with the contents of every text:
 
+```
+app.post('/sms', function(req, res) {
+  console.log('From: ' + req.body.From);
+  console.log('Body: ' + req.body.Body);
 
+  // Log the message in the DB
+  var newText = new Text({ from: req.body.From,
+                           body: req.body.Body});
+
+  newText.save(function (err, newText) {
+    if (err) return console.error(err);
+    console.log('Record saved to DB.')
+  });
+
+  // Construct and send SMS response
+  const MessagingResponse = require('twilio').twiml.MessagingResponse;
+  const response = new MessagingResponse();
+  response.message('Thank you. Your message has been recorded.');
+
+  res.writeHead(200, {'Content-Type': 'text/xml'});
+  res.end(response.toString());
+});
+```
+
+The important new functions are:
+
+- `new Text`, which uses the model constructor to create a new data object. Notice that the input to
+the constructor is a JS object (enclosed in `{}`) that specifies the names and their properties.
+
+- `save`, which actually invokes the back-end DB operations to save an object in the database. Notice that `save` is a **method** of
+`newText`.
+
+Try running the server again and sending a few texts. You will see messages saying that they've been saved to the DB, but you can't see
+the contents of the DB, which leads to...
+
+**Step 3: Write a route to view the contents of the DB**
+
+Add one more route to your project, which will dump all of the DB contents to the console:
+
+```
+app.get('/data', function(req, res) {
+
+  // Print out all messages in DB
+  Text.find(function (err, texts) {
+    if (err) return console.error(err);
+    console.log(texts);
+  });
+
+  // Send back a generic response
+  res.writeHead(200, {'Content-Type': 'text/xml'});
+  res.end("OK");
+
+});
+```
+
+A few points:
+
+- This code uses the HTTP GET method, specified by `app.get`.
+
+- The important function to look up all values in the DB is `find`. It returns a list of all data objects generated by the `Text` model.
+
+- When the `find` completes it runs the specified callback function. The results of the call are saved in the array `texts`.
+
+- The last lines send a generic response message back to the client. It could be more interesting if the response actually contained the
+data from the query, eh?
+
+Fire up another terminal window to test your implementation:
+
+```
+curl https://YOURWORKSPACENAME-YOURUSERNAME.c9users.io:8080/data
+```
+
+The `curl` command sends a basic HTTP GET request to the specified route, which triggers the code to print the DB contents to the 
+console.
+
+## Next
+
+This lab has given you a high-level overview of routes, interacting with third-party APIs, and storing data in a NoSQL database.
+
+A few final thoughts:
+
+- Reading documentation and searching for examples are essential when doing this kind of work.
+
+- At the same time, be prepared for the possiblity that the docs you find might be wrong or out of date. I had to fix multiple errors
+that were in the official Twilio documentation to get their example code to run, due to the doc still using an out-of-date version of
+their own API.
+
+- There's one piece that we're still missing: sending a request **from a client page** to the server, getting some data back, and using
+that data to update the client page.
 
