@@ -377,7 +377,7 @@ Mongo + Mongoose data item as a "blob" of named data properties.
 
 However, you can't just chuck any object you want into the DB (at least, we're not going to let you do that--there are **rules**). You must first define a **schema** that specifies what names and their types you'd like a data object to contain.
 
-**Step 1: Create the Schema***  Modify your Mongoose setup code to the following. This code will create a data model for saving
+**Step 1: Create the Schema**  Modify your Mongoose setup code to the following. This code will create a data model for saving
 texts in the DB.
 
 ```
