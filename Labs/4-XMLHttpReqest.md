@@ -49,7 +49,6 @@ Now load up `index.html`:
 
     </head>
 
-
     <body>
         <h1>Example</h1>
 
@@ -70,3 +69,83 @@ Now load up `index.html`:
 </html>
 ```
 
+The page has an input box and a button. Clicking the button fires off a little JavaScript that displays a message.
+
+Run the server, load the page, and test the button.
+
+## Client to Server
+
+Create a new route on the server:
+
+```
+// Receive a request from the server
+app.post('/submit', function(req, res) {
+
+    console.log("Request received: " + parameter);
+
+    var data = {message: 'hello, world!'};
+
+    res.setHeader('Content-Type', 'application/json');
+    res.json(data);
+});
+```
+
+This route is tied to the URL `/submit`. It uses the HTTP `POST` method.
+
+The most important part is what it returns: 
+
+- `data` is a JS object with one field (`message`)
+
+- The final two lines convert that object into a text-based representation that can be the body of an HTTP response
+
+This style of sending JS objects as HTTP text is called *JavaScript Object Notation* (JSON), and it's a preferred way of passing
+information between clients and servers on the modern web.
+
+Now add some code on the client to send an `XMLHttpRequest`. Replace the existing script block with the following:
+
+```
+        <script>
+            document.getElementById('button').onclick = function() {
+            
+                var textbox = document.getElementById('input_box');
+                var text = textbox.value;
+                var data = {parameter: text};
+
+                // Send the request to the server
+                var xmlhttp = new XMLHttpRequest();
+
+                xmlhttp.onload = function() {
+                    alert("Response received!");
+
+                    var data = JSON.parse(this.responseText);
+                    console.log(data);
+                };
+
+                xmlhttp.open("POST", "/submit");
+                xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+                xmlhttp.send(JSON.stringify(data));
+            }
+        </script>
+```
+
+## Server Response
+
+Here's the final version of the server code:
+
+```
+// Global count variable
+var count = 1;
+
+// Receive a request from the server
+app.post('/submit', function(req, res) {
+
+    var parameter = req.body.parameter;
+    console.log("Request received: " + parameter);
+
+    var data = {message: 'hello, world!', count: count};
+    count++;
+
+    res.setHeader('Content-Type', 'application/json');
+    res.json(data);
+});
+```
