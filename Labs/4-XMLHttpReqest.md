@@ -128,7 +128,11 @@ Now add some code on the client to send an `XMLHttpRequest`. Replace the existin
         </script>
 ```
 
+**THIS SECTION IS INCOMPLETE**.
+
 ## Server Response
+
+**THIS SECTION IS INCOMPLETE**.
 
 Here's the final version of the server code:
 
