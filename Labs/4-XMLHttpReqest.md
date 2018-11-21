@@ -107,13 +107,17 @@ Now add some code on the client to send an `XMLHttpRequest`. Replace the existin
         <script>
             document.getElementById('button').onclick = function() {
             
+                // Read the value from the text box
                 var textbox = document.getElementById('input_box');
                 var text = textbox.value;
+                
+                // Pack it into an object
                 var data = {parameter: text};
 
                 // Send the request to the server
                 var xmlhttp = new XMLHttpRequest();
 
+                // This function runs when the server's response arrives
                 xmlhttp.onload = function() {
                     alert("Response received!");
 
@@ -121,14 +125,20 @@ Now add some code on the client to send an `XMLHttpRequest`. Replace the existin
                     console.log(data);
                 };
 
-                xmlhttp.open("POST", "/submit");
-                xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-                xmlhttp.send(JSON.stringify(data));
+                xmlhttp.open("POST", "/submit");  // Use POST method
+                xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");  // Data is JSON
+                xmlhttp.send(JSON.stringify(data));  // Convert object to JSON HTTP body
             }
         </script>
 ```
 
-**THIS SECTION IS INCOMPLETE**.
+This code is easy to understand if you break it into its main parts:
+
+- Read the value from the text box using `document.getElementById`
+
+- Create a `new XMLHttpRequest` object
+
+- Declare an `onload` function that will run when the server's response returns; note that this is an **asynchronous** function
 
 ## Server Response
 
