@@ -79,9 +79,9 @@ Create a new route on the server:
 
 ```
 // Receive a request from the server
-app.post('/submit', function(req, res) {
+app.get('/submit', function(req, res) {
 
-    console.log("Request received: " + parameter);
+    console.log("Request received");
 
     var data = {message: 'hello, world!'};
 
@@ -90,7 +90,7 @@ app.post('/submit', function(req, res) {
 });
 ```
 
-This route is tied to the URL `/submit`. It uses the HTTP `POST` method.
+This route is tied to the URL `/submit`. It uses the HTTP `GET` method.
 
 The most important part is what it returns: 
 
@@ -106,23 +106,75 @@ Now add some code on the client to send an `XMLHttpRequest`. Replace the existin
 ```
         <script>
             document.getElementById('button').onclick = function() {
-            
-                // Read the value from the text box
-                var textbox = document.getElementById('input_box');
-                var text = textbox.value;
-                
-                // Pack it into an object
-                var data = {parameter: text};
 
                 // Send the request to the server
                 var xmlhttp = new XMLHttpRequest();
 
                 // This function runs when the server's response arrives
                 xmlhttp.onload = function() {
-                    alert("Response received!");
-
                     var data = JSON.parse(this.responseText);
-                    console.log(data);
+                    alert(data);
+                };
+
+                xmlhttp.open("GET", "/submit");  // Use POST method
+                xmlhttp.send();
+            }
+        </script>
+```
+
+This code creates the new `XMLHttpRequest` object and sets its `onload` function, which runs when the response returns from
+the server. Note that this is an **asynchronous** function.
+
+The last two lines specify the use of the GET method and the destination URL, then send the request to the server.
+
+## Passing More Parameters
+
+Now, add a little more functionality to the code to pass a JSON object from the client to the server, use the data on the server,
+then return a customized response.
+
+Here is the updated server code. Note that the method has been changed to **POST**, because the server is now receiving JSON data
+in the body of the HTTP message.
+
+```
+// Receive a request from the server
+app.post('/submit', function(req, res) {
+
+    var name = req.body.name;
+    console.log("Name: " + name);
+
+    var data = {message: 'hello, ' + name + '!'};
+
+    res.setHeader('Content-Type', 'application/json');
+    res.json(data);
+});
+```
+
+Here is the updated client. The differences are:
+
+- The first three lines use `getElementById` to read the value of the text box (we've done this before) and assign it as a field in a JS object.
+
+- The `open` method now uses the POST method.
+
+- The last two lines send the text box value as JSON data.
+
+```
+        <script>
+            document.getElementById('button').onclick = function() {
+            
+                // Read the value from the text box
+                var textbox = document.getElementById('input_box');
+                var text = textbox.value;
+                
+                // Pack it into an object
+                var data = {name: text};
+
+                // Send the request to the server
+                var xmlhttp = new XMLHttpRequest();
+
+                // This function runs when the server's response arrives
+                xmlhttp.onload = function() {
+                    var data = JSON.parse(this.responseText);
+                    alert(data);
                 };
 
                 xmlhttp.open("POST", "/submit");  // Use POST method
@@ -130,36 +182,4 @@ Now add some code on the client to send an `XMLHttpRequest`. Replace the existin
                 xmlhttp.send(JSON.stringify(data));  // Convert object to JSON HTTP body
             }
         </script>
-```
-
-This code is easy to understand if you break it into its main parts:
-
-- Read the value from the text box using `document.getElementById`
-
-- Create a `new XMLHttpRequest` object
-
-- Declare an `onload` function that will run when the server's response returns; note that this is an **asynchronous** function
-
-## Server Response
-
-**THIS SECTION IS INCOMPLETE**.
-
-Here's the final version of the server code:
-
-```
-// Global count variable
-var count = 1;
-
-// Receive a request from the server
-app.post('/submit', function(req, res) {
-
-    var parameter = req.body.parameter;
-    console.log("Request received: " + parameter);
-
-    var data = {message: 'hello, world!', count: count};
-    count++;
-
-    res.setHeader('Content-Type', 'application/json');
-    res.json(data);
-});
 ```
