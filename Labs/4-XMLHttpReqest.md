@@ -183,3 +183,77 @@ Here is the updated client. The differences are:
             }
         </script>
 ```
+
+## Passing Parameters Using GET
+
+The previous example used HTTP POST to send data to the server. It's also possible to pass data to the server using GET.
+
+What's the difference?
+
+- POST is traditionally used for messages that imply some change in the server's state, or require the server to update its data model. For example, as the name implies, posting a new blog entry that's saved in a database of blog entries would use the POST method.
+
+- GET is traditionally used to supply a query that the server can satisfy, but that doesn't require any change to the server's state or data. Passing a query to a search engine is an example.
+
+Here's a rule of thumb: GET is often used for requests that **read** data from the server, without writing any new data. POST is used if
+the request could result in a **write** of new data to the server.
+
+The HTTP standard defines a few more methods, like PUT and DELETE, that are only infrequently used.
+
+GET parameters are appended to the URL, like this:
+
+```
+http://prep-dansmyers/submit?name=dsm
+```
+
+The parameters come after the `?`. Each parameter is structured as a key-value pair; in this case, the key is `name` and the value is `dsm`.
+
+It's possible to pass multiple parameters using `&`:
+
+```
+http://prep-dansmyers/submit?name=dsm&word=gnarly
+```
+
+Update your code to use GET:
+
+```
+// Receive a request from the server
+app.get('/submit', function(req, res) {
+
+    var name = req.query.name;
+    console.log("Name: " + name);
+
+    var data = {message: 'hello, ' + name + '!'};
+
+    res.setHeader('Content-Type', 'application/json');
+    res.json(data);
+});
+```
+
+This server-side code looks almost the same. The only different is using `req.query.name` instead of `req.body.name`. Notice that
+the return message doesn't change: that part is the same for GET or POST.
+
+On the client side, the primary change is to pass the parameter using the URL instead of
+the message body.
+
+```
+        <script>
+            document.getElementById('button').onclick = function() {
+
+                var textbox = document.getElementById('input_box');
+                var text = textbox.value;
+                var data = {name: text};
+
+                // Send the request to the server
+                var xmlhttp = new XMLHttpRequest();
+
+                xmlhttp.onload = function() {
+                    var data = JSON.parse(this.responseText);
+                    alert(data.message);
+                };
+
+                // Pass parameter using the URL
+                xmlhttp.open("GET", "/submit/?name=" + text);
+                xmlhttp.send();
+            }
+        </script>
+```
