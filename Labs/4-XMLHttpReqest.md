@@ -113,7 +113,7 @@ Now add some code on the client to send an `XMLHttpRequest`. Replace the existin
                 // This function runs when the server's response arrives
                 xmlhttp.onload = function() {
                     var data = JSON.parse(this.responseText);
-                    alert(data);
+                    alert(data.message);
                 };
 
                 xmlhttp.open("GET", "/submit");  // Use POST method
@@ -174,7 +174,7 @@ Here is the updated client. The differences are:
                 // This function runs when the server's response arrives
                 xmlhttp.onload = function() {
                     var data = JSON.parse(this.responseText);
-                    alert(data);
+                    alert(data.message);
                 };
 
                 xmlhttp.open("POST", "/submit");  // Use POST method
