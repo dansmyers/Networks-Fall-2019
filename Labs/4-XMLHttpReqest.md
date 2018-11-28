@@ -30,6 +30,11 @@ const port = 8080;
 var path = require('path');
 app.use(express.static('public'));
 
+// Body parser provides support for reading JSON bodies of POST requests
+var bodyParser = require('body-parser');
+app.use(bodyParser.json()); // support json encoded bodies
+app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
+
 // Return root page
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, '/index.html')));
 
