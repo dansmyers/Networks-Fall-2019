@@ -273,7 +273,7 @@ Use the `button` tag to create buttons. All Bootstrap buttons have the `btn` cla
 
 - `mt-4` adds some vertical space between elements.
 
-# Phase 1: Get the Image URL from the Input Box
+## Phase 1: Get the Image URL from the Input Box
 
 First, modify the `<script>` to load the image when the user clicks the button:
 
